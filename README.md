@@ -85,5 +85,5 @@ Password: admin
 
 ## 📌 Author
 
-**Harsh Jain**
+**Harshita Jain**
 GitHub: https://github.com/harshujain1910
