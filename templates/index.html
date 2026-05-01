@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+
+        .alert {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .danger {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🚀 Live Server Dashboard</h1>
+
+<h2>CPU Usage</h2>
+<canvas id="cpuChart" width="600" height="250"></canvas>
+
+<h2>Memory Usage</h2>
+<canvas id="memoryChart" width="600" height="250"></canvas>
+
+<div id="alertBox" class="alert"></div>
+
+<script>
+let labels = [];
+
+let cpuData = [];
+let memoryData = [];
+
+// CPU Chart
+const cpuChart = new Chart(document.getElementById('cpuChart'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'CPU (%)',
+            data: cpuData,
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    }
+});
+
+// Memory Chart
+const memoryChart = new Chart(document.getElementById('memoryChart'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Memory (%)',
+            data: memoryData,
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    }
+});
+
+function fetchData() {
+    fetch('/data')
+    .then(res => res.json())
+    .then(data => {
+
+        let time = new Date().toLocaleTimeString();
+
+        labels.push(time);
+        cpuData.push(data.cpu);
+        memoryData.push(data.memory);
+
+        if (labels.length > 10) {
+            labels.shift();
+            cpuData.shift();
+            memoryData.shift();
+        }
+
+        // 🔴 ALERT LOGIC
+        let alertBox = document.getElementById("alertBox");
+        alertBox.innerHTML = "";
+
+        if (data.cpu > 80) {
+            alertBox.innerHTML += "🚨 High CPU Usage! ";
+            cpuChart.data.datasets[0].borderColor = "red";
+        } else {
+            cpuChart.data.datasets[0].borderColor = "lime";
+        }
+
+        if (data.memory > 80) {
+            alertBox.innerHTML += "🚨 High Memory Usage!";
+            memoryChart.data.datasets[0].borderColor = "red";
+        } else {
+            memoryChart.data.datasets[0].borderColor = "cyan";
+        }
+
+        cpuChart.update();
+        memoryChart.update();
+    });
+}
+
+setInterval(fetchData, 2000);
+</script>
+
+</body>
+</html>
